@@ -128,7 +128,7 @@ fn test_win_tie_break_game() {
     tennis_match.point_won_by("player 1".to_string());
     tennis_match.point_won_by("player 1".to_string());
     tennis_match.point_won_by("player 1".to_string());
-    assert_eq!(tennis_match.score(), "7-6");
+    assert_eq!(tennis_match.score(), "7-6, player 1 wins");
 }
 
 #[test]
@@ -169,5 +169,20 @@ fn test_win_tie_break_game_with_more_than_seven_points() {
     tennis_match.point_won_by("player 2".to_string());
     tennis_match.point_won_by("player 1".to_string());
     tennis_match.point_won_by("player 1".to_string());
-    assert_eq!(tennis_match.score(), "7-6");
+    assert_eq!(tennis_match.score(), "7-6, player 1 wins");
+}
+
+#[test]
+fn test_win_consecutive_games() {
+    let mut tennis_match = tennis::Match::new("player 1".to_string(), "player 2".to_string());
+    tennis_match = helpers::win_n_games(tennis_match, "player 2", 6);
+    assert_eq!(tennis_match.score(), "0-6, player 2 wins");
+}
+
+#[test]
+fn test_win_seven_five() {
+    let mut tennis_match = tennis::Match::new("player 1".to_string(), "player 2".to_string());
+    tennis_match = helpers::win_n_games(tennis_match, "player 2", 5);
+    tennis_match = helpers::win_n_games(tennis_match, "player 1", 7);
+    assert_eq!(tennis_match.score(), "7-5, player 1 wins");
 }

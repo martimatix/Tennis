@@ -3,6 +3,9 @@ const MIN_DEUCE_POINTS: usize = 3;
 const MIN_POINTS_TO_WIN_REGULAR_GAME: usize = 4;
 const MIN_MARGIN_TO_WIN_GAME: usize = 2;
 const MIN_POINTS_TO_WIN_TIE_BREAK_GAME: usize = 7;
+const MIN_MARGIN_TO_WIN_SET: u8 = 2;
+const MIN_GAMES_TO_WIN_SET: u8 = 6;
+const TIE_BREAK_VICTORY_GAMES: u8 = 7;
 
 pub struct Match {
     player_1: Player,
@@ -18,6 +21,11 @@ impl Match {
     }
 
     pub fn point_won_by(&mut self, player_name: String) -> &Match {
+        let (match_ended, _) = Match::match_ended(&self);
+        if match_ended {
+            return self;
+        }
+
         let is_tie_break = self.is_tie_break();
 
         let (winner, loser) = if player_name == self.player_1.name {
@@ -45,13 +53,19 @@ impl Match {
     }
 
     pub fn score(self) -> String {
+        let (match_ended, winner_name) = Match::match_ended(&self);
+        let set_score = format!("{}-{}", self.player_1.set_score, self.player_2.set_score);
+
+        if match_ended {
+            let win_text = format!("{} wins", winner_name);
+            return format!("{}, {}", set_score, win_text);
+        }
+
         let game_score = if self.is_tie_break() {
             self.tie_break_game_score()
         } else {
             self.regular_game_score()
         };
-
-        let set_score = format!("{}-{}", self.player_1.set_score, self.player_2.set_score);
 
         if (self.player_1.game_score + self.player_2.game_score) == 0 {
             set_score
@@ -101,6 +115,23 @@ impl Match {
     fn is_tie_break(&self) -> bool {
         self.player_1.set_score == TIE_BREAK_SET_VALUE
             && self.player_2.set_score == TIE_BREAK_SET_VALUE
+    }
+
+    fn match_ended(&self) -> (bool, String) {
+        if Match::has_won_match(self.player_1.set_score, self.player_2.set_score) {
+            (true, self.player_1.name.clone())
+        } else if Match::has_won_match(self.player_2.set_score, self.player_1.set_score) {
+            (true, self.player_2.name.clone())
+        } else {
+            (false, "".to_string())
+        }
+    }
+
+    fn has_won_match(potential_winner_set_score: u8, other_player_set_score: u8) -> bool {
+        potential_winner_set_score > other_player_set_score
+            && potential_winner_set_score - other_player_set_score >= MIN_MARGIN_TO_WIN_SET
+            && potential_winner_set_score >= MIN_GAMES_TO_WIN_SET
+            || potential_winner_set_score == TIE_BREAK_VICTORY_GAMES
     }
 }
 
