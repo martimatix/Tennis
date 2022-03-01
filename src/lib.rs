@@ -7,20 +7,20 @@ const MIN_MARGIN_TO_WIN_SET: u8 = 2;
 const MIN_GAMES_TO_WIN_SET: u8 = 6;
 const TIE_BREAK_VICTORY_GAMES: u8 = 7;
 
-pub struct Match {
-    player_1: Player,
-    player_2: Player,
+pub struct Match<'a> {
+    player_1: Player<'a>,
+    player_2: Player<'a>,
 }
 
-impl Match {
-    pub fn new(player_1_name: String, player_2_name: String) -> Match {
+impl<'a> Match<'a> {
+    pub fn new(player_1_name: &'a str, player_2_name: &'a str) -> Match<'a> {
         Match {
             player_1: Player::new(player_1_name),
             player_2: Player::new(player_2_name),
         }
     }
 
-    pub fn point_won_by(&mut self, player_name: String) -> &Match {
+    pub fn point_won_by(&mut self, player_name: &str) -> &Match {
         let (match_ended, _) = Match::match_ended(&self);
         if match_ended {
             return self;
@@ -117,13 +117,13 @@ impl Match {
             && self.player_2.set_score == TIE_BREAK_SET_VALUE
     }
 
-    fn match_ended(&self) -> (bool, String) {
+    fn match_ended(&self) -> (bool, &str) {
         if Match::has_won_match(self.player_1.set_score, self.player_2.set_score) {
-            (true, self.player_1.name.clone())
+            (true, self.player_1.name)
         } else if Match::has_won_match(self.player_2.set_score, self.player_1.set_score) {
-            (true, self.player_2.name.clone())
+            (true, self.player_2.name)
         } else {
-            (false, "".to_string())
+            (false, "")
         }
     }
 
@@ -135,14 +135,14 @@ impl Match {
     }
 }
 
-struct Player {
-    name: String,
+struct Player<'a> {
+    name: &'a str,
     game_score: usize,
     set_score: u8,
 }
 
-impl Player {
-    fn new(name: String) -> Player {
+impl Player<'_> {
+    fn new(name: &str) -> Player {
         Player {
             name,
             game_score: 0,
